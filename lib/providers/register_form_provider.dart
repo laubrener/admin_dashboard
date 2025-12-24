@@ -8,7 +8,7 @@ class RegisterFormProvider extends ChangeNotifier {
   String password = '';
   String confirmPassword = '';
 
-  validateForm() {
+  void validateForm() {
     if (formKey.currentState!.validate()) {
       print('Formulario válido');
       print('$email - $password - $confirmPassword');
