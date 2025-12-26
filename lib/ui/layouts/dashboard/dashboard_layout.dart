@@ -1,20 +1,77 @@
+import 'package:admin_dashboard/providers/sidemenu_provider.dart';
+import 'package:admin_dashboard/ui/shared/navbar.dart';
 import 'package:admin_dashboard/ui/shared/sidebar.dart';
 import 'package:flutter/material.dart';
 
-class DashboardLayout extends StatelessWidget {
+class DashboardLayout extends StatefulWidget {
   const DashboardLayout({super.key, required this.child});
 
   final Widget child;
 
   @override
+  State<DashboardLayout> createState() => _DashboardLayoutState();
+}
+
+class _DashboardLayoutState extends State<DashboardLayout>
+    with SingleTickerProviderStateMixin {
+  @override
+  void initState() {
+    super.initState();
+    SideMenuProvider.menuController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: Color(0xffEDF1F2),
-      body: Row(
+      body: Stack(
         children: [
-          // Aquí iría el menú lateral
-          Sidebar(),
-          Expanded(child: child),
+          Row(
+            children: [
+              if (size.width >= 700) Sidebar(),
+              Expanded(
+                child: Column(
+                  children: [
+                    Navbar(),
+                    Expanded(child: Container(child: widget.child)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (size.width < 700)
+            AnimatedBuilder(
+              animation: SideMenuProvider.menuController,
+              builder: (context, child) {
+                return Stack(
+                  children: [
+                    if (SideMenuProvider.isOpen)
+                      AnimatedOpacity(
+                        duration: Duration(milliseconds: 200),
+                        opacity: SideMenuProvider.opacity.value,
+                        child: GestureDetector(
+                          onTap: () => SideMenuProvider.closeMenu(),
+                          child: Container(
+                            width: size.width,
+                            height: size.height,
+                            color: Colors.black26,
+                          ),
+                        ),
+                      ),
+
+                    Transform.translate(
+                      offset: Offset(SideMenuProvider.movement.value, 0),
+                      child: Sidebar(),
+                    ),
+                  ],
+                );
+              },
+            ),
         ],
       ),
     );
